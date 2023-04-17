@@ -1,0 +1,33 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  EC2_IP_ADDRESS: 3.110.195.27
+  DATABASE_URL: cc-project.c6foexujyp6v.ap-south-1.rds.amazonaws.com:3306
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y nginx nodejs npm
+
+    - name: Build and deploy frontend
+      run: |
+        sudo cp -r build/* /usr/share/nginx/html/
+        sudo service nginx restart
+
+    - name: Install server dependencies and start server
+      run: |
+        cd server
+        npm install
+        nodemon index.js
