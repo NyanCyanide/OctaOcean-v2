@@ -30,4 +30,4 @@ jobs:
       run: |
         cd server
         npm install
-        nodemon index.js
+        node index.js
