@@ -198,6 +198,6 @@ app.put("/messageread", (req, res) => {
 });
 
 // Starting Server
-app.listen(3001, () => {
+app.listen(3001,"0.0.0.0" () => {
   console.log(`Server Started : ${ipaddr}:3001`);
 });
