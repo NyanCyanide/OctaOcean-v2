@@ -1,33 +1,40 @@
-name: Deploy to EC2
+name: Deploy to EC2 instance
 
 on:
   push:
     branches:
       - main
 
-env:
-  EC2_IP_ADDRESS: 3.110.195.27
-  DATABASE_URL: cc-project.c6foexujyp6v.ap-south-1.rds.amazonaws.com:3306
-
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - name: Connect to EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: i-05fb70fb7cdebbb77
+          username: ubuntu
+          script: |
+            # Step 1: Connect to the EC2 instance
+            cd ~
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y nginx nodejs npm
+            # Step 2: Check if the aws-OctaOcean directory exists and delete it if it does
+            if [ -d "aws-OctaOcean" ]; then
+              rm -rf aws-OctaOcean
+            fi
 
-    - name: Build and deploy frontend
-      run: |
-        sudo cp -r build/* /usr/share/nginx/html/
-        sudo service nginx restart
+            # Clone the aws-OctaOcean repository
+            git clone https://github.com/NyanCyanide/aws-OctaOcean.git
 
-    - name: Install server dependencies and start server
-      run: |
-        cd server
-        npm install
-        node index.js
+            # Step 3: Copy files from the build folder to /var/www/html and /var/www/OctaOcean/html
+            sudo cp -r aws-OctaOcean/build/. /var/www/html/
+            sudo cp -r aws-OctaOcean/build/. /var/www/OctaOcean/html/
+
+            # Step 4: Restart nginx server
+            sudo systemctl restart nginx
+
+            # Step 5: Install node packages and run server
+            cd aws-OctaOcean/server
+            npm install
+            node index.js
